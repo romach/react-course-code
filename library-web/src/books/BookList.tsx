@@ -1,25 +1,32 @@
-import { useEffect, useState } from "react";
 import type { Book, Page } from "../api/types.ts";
+import { useFetch } from "../api/useFetch.ts";
 
-export function BookList() {
-  const [page, setPage] = useState<Page<Book> | null>(null);
+type BookListProps = {
+  authorId: string | null;
+};
 
-  useEffect(() => {
-    fetch("/api/books?sort=year,desc")
-      .then((response) => response.json())
-      .then(setPage);
-  }, []);
+export function BookList({ authorId }: BookListProps) {
+  const url = authorId
+    ? `/api/books?authorId=${authorId}&sort=year,desc`
+    : "/api/books?sort=year,desc";
+  const books = useFetch<Page<Book>>(url);
 
-  const books = page?.content ?? [];
-  const total = page?.page.totalElements ?? 0;
+  if (books.status === "loading") {
+    return <p>Loading books...</p>;
+  }
+  if (books.status === "error") {
+    return <p>Could not load books: {books.error.message}</p>;
+  }
+
+  const { content, page } = books.data;
 
   return (
     <>
       <p>
-        Showing {books.length} of {total} books
+        Showing {content.length} of {page.totalElements} books
       </p>
       <ul>
-        {books.map((book) => (
+        {content.map((book) => (
           <li key={book.id}>
             {book.title} ({book.year}) by{" "}
             {book.authors.map((author) => author.name).join(", ")}

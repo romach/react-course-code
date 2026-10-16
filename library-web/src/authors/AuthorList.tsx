@@ -1,25 +1,25 @@
-import { useEffect, useState } from "react";
 import type { Author, Page } from "../api/types.ts";
+import { useFetch } from "../api/useFetch.ts";
 
 export function AuthorList() {
-  const [page, setPage] = useState<Page<Author> | null>(null);
+  const authors = useFetch<Page<Author>>("/api/authors");
 
-  useEffect(() => {
-    fetch("/api/authors")
-      .then((response) => response.json())
-      .then(setPage);
-  }, []);
+  if (authors.status === "loading") {
+    return <p>Loading authors...</p>;
+  }
+  if (authors.status === "error") {
+    return <p>Could not load authors: {authors.error.message}</p>;
+  }
 
-  const authors = page?.content ?? [];
-  const total = page?.page.totalElements ?? 0;
+  const { content, page } = authors.data;
 
   return (
     <>
       <p>
-        Showing {authors.length} of {total} authors
+        Showing {content.length} of {page.totalElements} authors
       </p>
       <ul>
-        {authors.map((author) => (
+        {content.map((author) => (
           <li key={author.id}>{author.name}</li>
         ))}
       </ul>
