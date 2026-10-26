@@ -1,5 +1,4 @@
-import type { Author, Page } from "../api/types.ts";
-import { useFetch } from "../api/useFetch.ts";
+import { useAuthors } from "./useAuthors.ts";
 
 type AuthorFilterProps = {
   value: string | null;
@@ -7,7 +6,7 @@ type AuthorFilterProps = {
 };
 
 export function AuthorFilter({ value, onChange }: AuthorFilterProps) {
-  const authors = useFetch<Page<Author>>("/api/authors");
+  const authors = useAuthors();
 
   const options = authors.status === "success" ? authors.data.content : [];
 
